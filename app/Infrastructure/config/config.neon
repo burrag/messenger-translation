@@ -1,0 +1,20 @@
+parameters:
+
+
+application:
+	errorPresenter: Error
+	mapping:
+		*: App\Presentation\Web\Presenter\*Presenter
+
+
+session:
+	expiration: 14 days
+
+extensions:
+    console: Contributte\Console\DI\ConsoleExtension(%consoleMode%)
+
+services:
+	- App\Presentation\Web\Router\RouterFactory::createRouter
+
+includes:
+    - extension/messenger.neon

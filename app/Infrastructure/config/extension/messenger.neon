@@ -1,0 +1,40 @@
+extensions:
+    messenger: Fmasa\Messenger\DI\MessengerExtension
+
+messenger:
+    transports:
+        translation: 'doctrine://default?queue_name=translation'
+        failed: 'doctrine://default?queue_name=failed'
+    routing:
+        App\Application\Translation\Messenger\TranslateDocument: translation
+        App\Application\Translation\Messenger\CheckDocument: translation
+        App\Application\Translation\Messenger\ProcessProductDocument: translation
+    buses:
+        translation:
+            middleware:
+                - Symfony\Component\Messenger\Middleware\AddBusNameStampMiddleware('translation')
+    failureTransport: failed
+
+services:
+    messenger.translationMessageBus:
+        class: App\Domain\Translation\TranslationBus
+        autowired: [App\Domain\Messenger\TranslationBus]
+        arguments: [@messenger.translation.bus]
+
+    messenger.translationRetryStrategy:
+        class: Symfony\Component\Messenger\Retry\MultiplierRetryStrategy
+        arguments:
+            - 1
+        tags:
+            messenger.retryStrategy: translation
+
+    messenger.checkDocumentHandler:
+        class: App\Presentation\Messenger\CheckDocumentHandler
+
+    messenger.proccessTranslatedDocumentHandler:
+        class: App\Presentation\Messenger\ProcessTranslatedDocumentHandler
+
+    messenger.translateDocumentHanlder:
+        class: App\Presentation\Messenger\TranslateDocumentHandler
+
+    - App\Application\Translation\TranslationFacade
